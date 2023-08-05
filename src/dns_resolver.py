@@ -25,7 +25,7 @@ def parse_header(reader):
     items = struct.unpack("!HHHHHH", reader.read(12))
     return DNSHeader(*items)
 
-def decode_name_simple(domain_name):
+def decode_name_simple(reader):
     parts = []
     while (length := reader.read(1)[0]) != 0:
         parts.append(reader.read(length))
