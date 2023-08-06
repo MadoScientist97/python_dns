@@ -1,8 +1,10 @@
-from utils import build_query, DNSQuery, DNSHeader
+from utils import build_query, DNSQuery, DNSHeader, TYPE_A, CLASS_IN
 from dataclasses import dataclass
 from io import BytesIO
 from typing import List
 import struct
+import sys
+import socket
 
 @dataclass
 class DNSRecord:
@@ -16,7 +18,7 @@ class DNSRecord:
 class DNSPacket:
     header: DNSHeader
     questions: List[DNSQuery]
-    answer: List[DNSRecord]
+    answers: List[DNSRecord]
     authorities: List[DNSRecord]
     additionals: List[DNSRecord]
 
@@ -73,6 +75,23 @@ def parse_dns_packet(data):
 
     return DNSPacket(header, questions, answers, authorities, additionals)
 
+def ip_to_string(ip):
+    return ".".join([str(x) for x in ip])
 
+def lookup_domain(domain_name):
+    query = build_query(domain_name, TYPE_A)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(query, ("8.8.8.8", 53))
 
-    
+    # get the response
+    data, _ = sock.recvfrom(1024)
+    response = parse_dns_packet(data)
+    return ip_to_string(response.answers[0].data)
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Need a domain name! Please enter one as an argument")
+        exit(2)
+    else:
+        print("Getting IP record for :" + sys.argv[1])
+        print(lookup_domain(sys.argv[1]))
