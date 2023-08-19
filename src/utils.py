@@ -43,19 +43,7 @@ def build_query(domain_name, record_type):
     name = encode_dns_name(domain_name)
     id = random.randint(0, 65353)
     RECURSION_DESIRED = 1 << 8
-    header = DNSHeader(id = id, num_questions=1, flags=RECURSION_DESIRED)
+    RECURSION_NOT_DESIRED = 0
+    header = DNSHeader(id = id, num_questions=1, flags=RECURSION_NOT_DESIRED)
     query = DNSQuery(name=name, type_=record_type, class_=CLASS_IN)
     return header_to_bytes(header) + query_to_bytes(query)
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("ERROR! Needs a domain/url for resolution.")
-        exit(-1)
-    query = build_query(sys.argv[1], 1)
-    
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    sock.sendto(query, ("8.8.8.8",53))
-
-    response, _ = sock.recvfrom(1024)
-

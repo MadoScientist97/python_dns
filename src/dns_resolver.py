@@ -88,6 +88,14 @@ def lookup_domain(domain_name):
     response = parse_dns_packet(data)
     return ip_to_string(response.answers[0].data)
 
+def send_query(ip_addr, domain_name, record_type):
+    query = build_query(domain_name, record_type)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(query, (ip_addr, 53))
+
+    data, _ =sock.recvfrom(1024)
+    return parse_dns_packet(data)
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Need a domain name! Please enter one as an argument")
